@@ -1,8 +1,37 @@
 #lang racket
 
-
 (define host (make-parameter "bat.org"))
 (define port (make-parameter 23))
+
+
+(define cmd-SE    240)
+(define cmd-NOP   241)
+(define cmd-DM    242)
+(define cmd-BRK   243)
+(define cmd-IP    244)
+(define cmd-AO    245)
+(define cmd-AYT   246)
+(define cmd-EC    247)
+(define cmd-EL    248)
+(define cmd-GA    249)
+(define cmd-SB    250)
+(define cmd-WILL  251)
+(define cmd-WONT  252)
+(define cmd-DO    253)
+(define cmd-DONT  254)
+(define cmd-IAC   255)
+
+
+(define (read-cmd in)
+  (define b (read-byte in))
+  (cond
+   [(eq? b cmd-GA) #f]
+   [(or (eq? b cmd-DO)
+        (eq? b cmd-DONT)
+        (eq? b cmd-WILL)
+        (eq? b cmd-WONT))
+    (read-byte in)]
+   ))
 
 
 (define (handle-conn in out)
