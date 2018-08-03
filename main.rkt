@@ -24,7 +24,7 @@
                   eof
                   buf)]
 
-             [(eqv? b #\newline)
+             [(= b (char->integer #\newline))
               (bytes-append buf #"\n")]
 
              [else

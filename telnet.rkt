@@ -43,7 +43,7 @@
   (define-values (pin pout) (make-pipe))
   (thread (λ ()
             (for ([b (in-port read-byte in)])
-              (if (equal? b cmd-IAC)
+              (if (= b cmd-IAC)
                   (handle-cmd in pout)
                   (write-byte b pout)))
             (close-output-port pout)))
@@ -54,21 +54,21 @@
 (define (handle-cmd in out)
   (define b (read-byte in))
   (cond
-   [(eq? b cmd-IAC)
+   [(= b cmd-IAC)
     (write-byte b out)]
 
-   [(or (eq? b cmd-DO)
-        (eq? b cmd-DONT)
-        (eq? b cmd-WILL)
-        (eq? b cmd-WONT))
+   [(or (= b cmd-DO)
+        (= b cmd-DONT)
+        (= b cmd-WILL)
+        (= b cmd-WONT))
     (read-byte in)]
 
 
-   [(eq? b cmd-SB)
+   [(= b cmd-SB)
     (for ([b (in-port read-byte in)])
       #:break (and
-               (eq? b cmd-IAC)
-               (eq? (peek-byte in) cmd-SE))
+               (= b cmd-IAC)
+               (= (peek-byte in) cmd-SE))
       #f)
     (read-byte in)] ;; pop cmd-SE
     
