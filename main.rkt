@@ -1,6 +1,8 @@
 #lang racket
 
 (require "telnet.rkt")
+(require "logger.rkt")
+
 
 (define host (make-parameter "bat.org"))
 (define port (make-parameter 23))
@@ -8,6 +10,7 @@
 
 (define (handle-line line)
   (display line)
+  (log-info (bytes->string/utf-8 line))
   (flush-output))
 
 
@@ -52,6 +55,6 @@
           
   (loop))
 
-(main-loop)
-
+(module+ main
+  (main-loop))
 
