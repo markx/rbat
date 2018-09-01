@@ -2,16 +2,16 @@
 
 (require "telnet.rkt")
 (require "logger.rkt")
-
+(require "gui.rkt")
 
 (define host (make-parameter "bat.org"))
 (define port (make-parameter 23))
 
 
-(define (handle-line line)
-  (display line)
-  (log-info (bytes->string/utf-8 line))
-  (flush-output))
+(define (handle-line raw-line) 
+  (define line (string-replace raw-line "\r\n" "\n"))
+  (log-info line)
+  (send-to-window "general" line))
 
 
 (define (read-line-avail in)
@@ -28,7 +28,7 @@
                   buf)]
 
              [(= b (char->integer #\newline))
-              (bytes-append buf #"\n")]
+              (bytes-append buf #"\n")] 
 
              [else
               (loop (bytes-append buf (bytes b)))]))))))
@@ -40,7 +40,7 @@
     (sync (handle-evt
            in
            (lambda (_)
-             (define line (read-line-avail in))
+             (define line (bytes->string/utf-8 (read-line-avail in)))
              (unless (eof-object? line)
                (handle-line line)
                (loop))))
@@ -56,5 +56,6 @@
   (loop))
 
 (module+ main
-  (main-loop))
-
+  (thread 
+    (lambda () 
+      (main-loop))))
