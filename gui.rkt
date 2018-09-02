@@ -1,7 +1,7 @@
 #lang racket/gui
 
 (provide
- send-to-window)
+ gui%)
   
 
 (define (make-window-chat parent)
@@ -25,25 +25,32 @@
   (new text-field% [parent parent] [label ">"]))
 
 
-(define (send-to-window window content)
-  (case window
-    [("chat") (send (send window-chat get-editor) insert content)]
-    [else (send (send window-general get-editor) insert content)]))
+(define gui% 
+  (class object%
+    (init on-send)
+    (define frame null)
+    (define window-general null)
+    (define window-chat null)
+    (define prompt null)
+    (super-new)
 
+    (define/public (run)
+      (set! frame (new frame%
+                       [label "rbat"]
+                       [width 900]
+                       [height 600]))
 
+      (define message-window (new horizontal-pane% [parent frame]))
+      (set! window-general (make-window-general message-window))
+      (define right-pane (new vertical-panel% 
+                              [parent message-window]))
+      (set! window-chat (make-window-chat right-pane))
 
-(define frame (new frame%
-                   [label "rbat"]
-                   [width 900]
-                   [height 600]))
+      (set! prompt (make-prompt frame))
+      (send frame show #t))
 
-(define message-window (new horizontal-pane% [parent frame]))
-(define window-general (make-window-general message-window))
-(define right-pane (new vertical-panel% 
-                        [parent message-window]))
-(define window-chat (make-window-chat right-pane))
-
-
-(define prompt (make-prompt frame))
-
-(send frame show #t)
+    (define/public (send-to-window window content)
+      (case window
+        [("chat") (send (send window-chat get-editor) insert content)]
+        [else (send (send window-general get-editor) insert content)]))))
+    

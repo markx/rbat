@@ -7,13 +7,6 @@
 (define host (make-parameter "bat.org"))
 (define port (make-parameter 23))
 
-
-(define (handle-line raw-line) 
-  (define line (string-replace raw-line "\r\n" "\n"))
-  (log-info line)
-  (send-to-window "general" line))
-
-
 (define (read-line-avail in)
   (let loop ([buf (bytes)])
     (if (and (> (bytes-length buf) 0)
@@ -34,8 +27,16 @@
               (loop (bytes-append buf (bytes b)))]))))))
 
 
-(define (main-loop)
+(define (main)
   (define-values (in out) (telnet-connect (host) (port)))
+  (define gui (new gui% [on-send (lambda (cmd) (displayln cmd out))]))
+  (send gui run)
+
+  (define (handle-line raw-line) 
+    (define line (string-replace raw-line "\r\n" "\n"))
+    (log-info line)
+    (send gui send-to-window "general" line))
+
   (define (loop)
     (sync (handle-evt
            in
@@ -52,10 +53,8 @@
              (flush-output out)
              (loop)))))
 
-          
-  (loop))
+  (thread
+    (lambda () (loop))))
 
 (module+ main
-  (thread 
-    (lambda () 
-      (main-loop))))
+  (main))
