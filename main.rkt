@@ -29,7 +29,10 @@
 
 (define (main)
   (define-values (in out) (telnet-connect (host) (port)))
-  (define gui (new gui% [on-send (lambda (cmd) (displayln cmd out))]))
+  (define gui (new gui%)) 
+  (send gui set-on-send (lambda (cmd) 
+                          (displayln cmd out)
+                          (flush-output out)))
   (send gui run)
 
   (define (handle-line raw-line) 

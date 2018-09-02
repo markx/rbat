@@ -21,18 +21,22 @@
   (send editor-canvas set-editor text)
   editor-canvas)
 
-(define (make-prompt parent)
-  (new text-field% [parent parent] [label ">"]))
-
-
 (define gui% 
   (class object%
-    (init on-send)
     (define frame null)
     (define window-general null)
     (define window-chat null)
     (define prompt null)
+    (define on-send null)
     (super-new)
+
+    (define (on-textbox-changed t e)
+      (and (eq? (send e get-event-type) 'text-field-enter)
+           (let ([msg (send t get-value)])
+               (on-send msg)
+
+             (send (send window-general get-editor) insert msg)
+             (send t set-value ""))))
 
     (define/public (run)
       (set! frame (new frame%
@@ -46,11 +50,16 @@
                               [parent message-window]))
       (set! window-chat (make-window-chat right-pane))
 
-      (set! prompt (make-prompt frame))
+      (set! prompt  (new text-field% 
+                         [parent frame] 
+                         [label ">"]
+                         [callback on-textbox-changed]))
       (send frame show #t))
 
     (define/public (send-to-window window content)
       (case window
         [("chat") (send (send window-chat get-editor) insert content)]
-        [else (send (send window-general get-editor) insert content)]))))
+        [else (send (send window-general get-editor) insert content)]))
     
+    (define/public (set-on-send callback)
+      (set! on-send callback))))
